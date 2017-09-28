@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <style>
+        .header {
+            background-color: gray;
+            height: 50px;
+        }
+        .header a {
+            color: white;
+        }
+        .header a:first-of-type {
+            margin-left: 80%;
+        }
+        .review {
+            border: 1px solid black;
+        }
+    </style>
+    <title></title>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row header">
+            <a href="{% url 'belt_reviewer:books' %}">Home</a> |
+            <a href="{% url 'belt_reviewer:logout' %}">Logout</a>
+        </div>
+        <div class="row">
+            <h2>{{ book.title }} by {{ book.author }}</h2>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <h3>Reviews</h3>
+                {% for review in book.reviews %}
+                    <div class="review">
+                        <h5>Rating: {{ review.rating }}</h5>
+                        <p><a href="{% url 'belt_reviewer:user_page' id=review.reviewed_by.id %}">{{ review.reviewed_by.first_name }}</a> says {{ review.body }}</p>
+                        {% if request.session.user.id == review.User_id %}
+                            <form action="{% url 'belt_reviewer:destroy_review' %}", method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="review_id" value="{{ review.id }}">
+                                <input type="hidden" name="book_id" value="{{ book.id }}">
+                                <input type="submit" value="Delete Review" class="btn-danger">
+                            </form>
+                        {% endif %}
+                        Posted on {{ review.created_at }}
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="col-md-6">
+                <h4>Add A Review!</h4>
+                <form action="{% url 'belt_reviewer:add_review' %}" method="post">
+                    {% csrf_token %}
+                    {{ add_review_form }}
+                    <input type="hidden" name="book_id", value="{{ book.id }}">
+                    <input type="submit" value="Submit" class="btn-primary">
+                </form>
+                {% if messages %}
+                    {% for message in messages %}
+                        <p>{{ message }}</p>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</body>
+</html>
